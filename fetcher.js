@@ -9,14 +9,35 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-request(URL, (error, response, body) => {
-  if (error) return console.error("URL invalid");
+const writeFile = function (body) {
   fs.writeFile(filePath, body, (err) => {
     if (err) {
-      console.error("File Path invalid");
       return;
     }
     console.log(`Downloaded and saved ${body.length} bytes to ${filePath}`);
     process.exit();
+  });
+};
+
+fs.readFile(filePath, function (err, data) {
+  if (err) {
+    console.log("File Path invalid");
+    process.exit();
+  }
+  request(URL, (error, response, body) => {
+    if (error) {
+      console.log("URL invalid");
+      process.exit();
+    }
+    if (data.length === 0) {
+      writeFile(body);
+    } else {
+      rl.question("Type in Y to overwrite the file    ", (answer) => {
+        if (answer === "Y") {
+          writeFile(body);
+        }
+        rl.close();
+      });
+    }
   });
 });
